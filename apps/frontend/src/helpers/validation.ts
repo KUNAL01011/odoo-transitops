@@ -64,13 +64,6 @@ export const expenseSchema = z.object({
 });
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 
-export const settingsSchema = z.object({
-  licenseAlertDays: z.number().int().positive(),
-  currency: z.string().min(1),
-  distanceUnit: z.string().min(1),
-});
-export type SettingsInput = z.infer<typeof settingsSchema>;
-
 export const loginSchema = z.object({
   email: z
     .string()
@@ -86,3 +79,12 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
+
+// lib/utils/validation.ts — settingsSchema updated
+export const settingsSchema = z.object({
+  depotName: z.string().min(1, "Depot name is required"),
+  currency: z.string().min(1),
+  distanceUnit: z.enum(["km", "miles"]),
+  licenseAlertDays: z.number().int().positive().optional(),
+});
+export type SettingsInput = z.infer<typeof settingsSchema>;

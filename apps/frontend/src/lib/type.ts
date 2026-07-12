@@ -121,6 +121,7 @@ export interface RolePermission {
 }
 
 export interface SystemSettings {
+  depotName: string;
   licenseAlertDays: number;
   currency: string;
   distanceUnit: string;
@@ -165,4 +166,51 @@ export interface ApiResponseShape<T> {
   data: T;
   message: string;
   success: boolean;
+}
+
+export interface AnalyticsSummary {
+  fuelEfficiencyKmPerL: number;
+  fleetUtilizationPct: number;
+  operationalCost: number;
+  vehicleRoiPct: number;
+  // Optional context/trend fields — NOT computed by the current Express
+  // routes. Frontend renders gracefully without them; add them to the
+  // /analytics/summary response once the backend computes real deltas.
+  fuelEfficiencyDeltaPct?: number;
+  fleetUtilizationDeltaPct?: number;
+  operationalCostDeltaPct?: number;
+  operationalCostDeltaReason?: string;
+  roiIndustryTargetPct?: number;
+}
+
+export interface TopCostVehicle {
+  vehicle: string;
+  cost: number;
+  // Optional — needs the backend to also surface the vehicle type (for the
+  // icon) and a human-readable reason (needs either a stored field or a
+  // "most expensive line item" query per vehicle). Neither exists yet.
+  vehicleType?: VehicleType;
+  primaryCostReason?: string;
+}
+
+export interface PerformanceAlert {
+  id: string;
+  severity: "warning" | "overdue";
+  title: string;
+  description: string;
+  actionLabel: string;
+  actionHref: string;
+}
+
+// lib/types.ts — added
+export interface SystemSettings {
+  depotName: string;
+  licenseAlertDays: number;
+  currency: string;
+  distanceUnit: string;
+}
+
+export interface SecurityOverview {
+  activeSessions: number;
+  authFailures24h: number;
 }

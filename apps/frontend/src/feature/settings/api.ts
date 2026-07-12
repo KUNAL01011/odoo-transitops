@@ -1,8 +1,18 @@
-import { SettingsInput } from "@/src/helpers/validation";
+// ================================================================
+// Settings & RBAC — API_DOCUMENTATION.md §13
+// Gated to FLEET_MANAGER per the default role matrix — see useMe()
+// + hasModuleAccess() from features/auth/api.ts for guarding the route.
+// ================================================================
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";
-import { RolePermission, SystemSettings } from "@/src/lib/type";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  RolePermission,
+  SecurityOverview,
+  SystemSettings,
+} from "@/src/lib/type";
+import { SettingsInput } from "@/src/helpers/validation";
 
 class SettingsService {
   get() {
@@ -16,6 +26,13 @@ class SettingsService {
   }
   updateRbac(permissions: RolePermission[]) {
     return apiClient.patch<RolePermission[]>("/settings/rbac", { permissions });
+  }
+  /** NOT YET BUILT on the backend — Active Sessions needs a sessions store
+   * (the app currently uses stateless JWT cookies, which have no server-side
+   * record to count). Auth Failures(24h) needs failed-login events written
+   * to AuditLog with timestamps, then aggregated here. */
+  securityOverview() {
+    return apiClient.get<SecurityOverview>("/settings/security-overview");
   }
 }
 
@@ -54,5 +71,15 @@ export function useUpdateRbacMatrix() {
       // refresh it immediately so a changed matrix takes effect without reload.
       qc.invalidateQueries({ queryKey: queryKeys.auth.me });
     },
+  });
+}
+
+/** Errors until /settings/security-overview exists — page shows placeholder
+ * dashes rather than crashing in the meantime. */
+export function useSecurityOverview() {
+  return useQuery({
+    queryKey: ["settings", "security-overview"],
+    queryFn: () => settingsService.securityOverview(),
+    retry: false,
   });
 }
