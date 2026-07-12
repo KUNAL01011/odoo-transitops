@@ -1,9 +1,3 @@
-// ================================================================
-// Notifications — API_DOCUMENTATION.md §14
-// Always scoped server-side to the current user's own notifications
-// (userId = me.id OR role = me.role) — no client filtering needed.
-// ================================================================
-
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

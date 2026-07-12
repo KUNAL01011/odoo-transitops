@@ -1,9 +1,3 @@
-// ================================================================
-// Settings & RBAC — API_DOCUMENTATION.md §13
-// Gated to FLEET_MANAGER per the default role matrix — see useMe()
-// + hasModuleAccess() from features/auth/api.ts for guarding the route.
-// ================================================================
-
 import { SettingsInput } from "@/src/helpers/validation";
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";

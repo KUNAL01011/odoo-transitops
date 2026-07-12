@@ -1,7 +1,3 @@
-// ================================================================
-// Fuel & Expenses — API_DOCUMENTATION.md §11
-// ================================================================
-
 import { ExpenseInput, FuelLogInput } from "@/src/helpers/validation";
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";

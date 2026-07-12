@@ -20,7 +20,9 @@ interface ApiResponseShape<T> {
 type QueryParams = Record<string, string | number | boolean | undefined | null>;
 
 class ApiClient {
-  constructor(private baseUrl: string = "/api") {}
+  constructor(
+    private baseUrl: string = process.env.NEXT_PUBLIC_API_BASE_URL || "/api"
+  ) {}
 
   private buildQuery(params?: QueryParams): string {
     if (!params) return "";

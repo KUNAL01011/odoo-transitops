@@ -1,10 +1,3 @@
-// ================================================================
-// zod schemas — one per form, wired via @hookform/resolvers/zod.
-// These enforce the same rules described in API_DOCUMENTATION.md
-// client-side (fast feedback) — the API must still re-check them
-// server-side, this is not a substitute for that.
-// ================================================================
-
 import { z } from "zod";
 
 export const loginSchema = z.object({

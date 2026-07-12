@@ -1,7 +1,3 @@
-// ================================================================
-// Drivers — API_DOCUMENTATION.md §8
-// ================================================================
-
 import { DriverInput } from "@/src/helpers/validation";
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";
