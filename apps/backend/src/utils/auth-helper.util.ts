@@ -2,10 +2,10 @@ import jwt from "jsonwebtoken";
 import { ApiError } from "./index";
 import { HTTP_STATUS } from "@/constants";
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES ?? "15m";
-const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES ?? "7d";
+const ACCESS_SECRET = process.env.ACCESS_SECRET!;
+const REFRESH_SECRET = process.env.REFRESH_SECRET!;
+const ACCESS_EXPIRES = process.env.ACCESS_EXPIRES ?? "15m";
+const REFRESH_EXPIRES = process.env.REFRESH_EXPIRES ?? "7d";
 
 export interface JwtPayload {
   userId: number;

@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { ApiError } from "@/utils";
 import { HTTP_STATUS, AUTH_MESSAGES } from "@/constants";
 import { Role } from "@/generated/prisma/enums";
-import { prisma } from "@/configs";
+import { myEnvironment, prisma } from "@/configs";
 import {
   signAccessToken,
   signRefreshToken,
