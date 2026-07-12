@@ -6,13 +6,29 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+// ================================================================
+// ENUMS
+// ================================================================
 
 enum Role {
   FLEET_MANAGER
-  DRIVER
+  DISPATCHER
   SAFETY_OFFICER
   FINANCIAL_ANALYST
-  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  LOCKED // auto-set after 5 failed login attempts (mockup Screen 0)
+  INACTIVE
+}
+
+enum VehicleType {
+  VAN
+  TRUCK
+  MINI_TRUCK
+  BUS
+  OTHER
 }
 
 enum VehicleStatus {
@@ -22,13 +38,10 @@ enum VehicleStatus {
   RETIRED
 }
 
-enum VehicleType {
-  TRUCK
-  VAN
-  BUS
-  BIKE
-  CAR
-  TRAILER
+enum LicenseCategory {
+  LMV
+  HMV
+  OTHER
 }
 
 enum DriverStatus {
@@ -45,131 +58,246 @@ enum TripStatus {
   CANCELLED
 }
 
+enum MaintenanceStatus {
+  ACTIVE // vehicle is "In Shop" while a record has this status
+  COMPLETED
+}
+
 enum ExpenseType {
-  FUEL
   TOLL
-  MAINTENANCE
   OTHER
 }
 
-model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         Role     @default(DRIVER)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  trips        Trip[]
+enum NotificationType {
+  LICENSE_EXPIRING
+  TRIP_DISPATCHED
+  TRIP_COMPLETED
+  TRIP_CANCELLED
+  MAINTENANCE_OPENED
+  MAINTENANCE_CLOSED
+  ACCOUNT_LOCKED
 }
+
+enum AppModule {
+  DASHBOARD
+  FLEET
+  DRIVERS
+  TRIPS
+  MAINTENANCE
+  FUEL_EXPENSES
+  ANALYTICS
+  SETTINGS
+}
+
+// ================================================================
+// AUTH / RBAC
+// ================================================================
+
+model User {
+  id                  Int        @id @default(autoincrement())
+  name                String
+  email               String     @unique
+  passwordHash        String
+  role                Role
+  status              UserStatus @default(ACTIVE)
+  failedLoginAttempts Int        @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  @@index([role])
+}
+
+// Drives Screen 8 (Settings & RBAC) — the matrix of which role can
+// view/edit which module. Seed this with the defaults implied by the
+// spec's role descriptions; edit it live from Settings.
+model RolePermission {
+  id      Int       @id @default(autoincrement())
+  role    Role
+  module  AppModule
+  canView Boolean   @default(false)
+  canEdit Boolean   @default(false)
+
+  @@unique([role, module])
+}
+
+// Singleton row — General tab of Screen 8 (Notify Alert / Currency /
+// Distance Unit + Save Changes).
+model SystemSettings {
+  id               Int      @id @default(1)
+  licenseAlertDays Int      @default(30)
+  currency         String   @default("INR")
+  distanceUnit     String   @default("km")
+  updatedAt        DateTime @updatedAt
+}
+
+// ================================================================
+// FLEET
+// ================================================================
 
 model Vehicle {
-  id                 String        @id @default(cuid())
-  registrationNumber String        @unique
-  name               String
-  type               VehicleType
-  maxLoadCapacity    Float         // kg
-  odometer           Float         @default(0) // km
-  acquisitionCost    Float
-  status             VehicleStatus @default(AVAILABLE)
-  region             String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-
-  trips              Trip[]
-  maintenanceLogs    MaintenanceLog[]
-  fuelLogs           FuelLog[]
-  expenses           Expense[]
-}
-
-model Driver {
-  id              String       @id @default(cuid())
-  name            String
-  licenseNumber   String       @unique
-  licenseCategory String
-  licenseExpiry   DateTime
-  contactNumber   String
-  safetyScore     Float        @default(100)
-  status          DriverStatus @default(AVAILABLE)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id              Int           @id @default(autoincrement())
+  regNo           String        @unique
+  name            String // Name/Model column
+  type            VehicleType
+  maxLoadCapacity Float // kg — capacity check in Trip Dispatcher
+  odometer        Float         @default(0)
+  acquisitionCost Float
+  status          VehicleStatus @default(AVAILABLE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   trips           Trip[]
-}
-
-model Trip {
-  id              String     @id @default(cuid())
-  source          String
-  destination     String
-  cargoWeight     Float      // kg
-  plannedDistance Float      // km
-  actualDistance  Float?     // km - set on completion
-  fuelConsumed    Float?     // liters - set on completion
-  finalOdometer   Float?     // set on completion
-  status          TripStatus @default(DRAFT)
-  startedAt       DateTime?
-  completedAt     DateTime?
-  cancelledAt     DateTime?
-  notes           String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  vehicleId       String
-  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id])
-
-  driverId        String
-  driver          Driver     @relation(fields: [driverId], references: [id])
-
-  dispatchedById  String?
-  dispatchedBy    User?      @relation(fields: [dispatchedById], references: [id])
-
+  maintenanceLogs MaintenanceLog[]
   fuelLogs        FuelLog[]
   expenses        Expense[]
+
+  @@index([status])
+  @@index([type])
 }
+
+// ================================================================
+// DRIVERS
+// ================================================================
+
+model Driver {
+  id              Int             @id @default(autoincrement())
+  name            String
+  licenseNumber   String          @unique
+  licenseCategory LicenseCategory
+  licenseExpiry   DateTime
+  contactNumber   String
+  safetyScore     Int             @default(100)
+  tripCompletions Int             @default(0)
+  status          DriverStatus    @default(AVAILABLE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  trips Trip[]
+
+  @@index([status])
+}
+
+// ================================================================
+// TRIPS
+// ================================================================
+
+model Trip {
+  id                 Int        @id @default(autoincrement())
+  tripCode           String     @unique // e.g. TR001, auto-generated
+  source             String
+  destination        String
+  vehicleId          Int?
+  driverId           Int?
+  cargoWeight        Float
+  plannedDistance    Float
+  finalOdometer      Float? // captured on Complete
+  fuelConsumedLiters Float? // captured on Complete
+  status             TripStatus @default(DRAFT)
+  cancellationReason String?
+  dispatchedAt       DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  vehicle  Vehicle?  @relation(fields: [vehicleId], references: [id])
+  driver   Driver?   @relation(fields: [driverId], references: [id])
+  fuelLogs FuelLog[]
+
+  @@index([status])
+}
+
+// ================================================================
+// MAINTENANCE
+// ================================================================
 
 model MaintenanceLog {
-  id          String    @id @default(cuid())
-  description String
-  cost        Float     @default(0)
-  isActive    Boolean   @default(true)   // true = In Shop, false = closed
-  startedAt   DateTime  @default(now())
+  id          Int                @id @default(autoincrement())
+  vehicleId   Int
+  serviceType String
+  description String?
+  cost        Float
+  date        DateTime
+  status      MaintenanceStatus  @default(ACTIVE)
+  photoUrl    String?
   closedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
-  vehicleId   String
-  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+
+  @@index([status])
 }
 
+// ================================================================
+// FUEL & EXPENSES
+// ================================================================
+
 model FuelLog {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
+  vehicleId Int
+  tripId    Int?
   liters    Float
   cost      Float
-  date      DateTime @default(now())
+  date      DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  vehicleId String
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
-
-  tripId    String?
-  trip      Trip?    @relation(fields: [tripId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  trip    Trip?   @relation(fields: [tripId], references: [id])
 }
 
 model Expense {
-  id          String      @id @default(cuid())
+  id          Int         @id @default(autoincrement())
+  vehicleId   Int
   type        ExpenseType
-  description String
   amount      Float
-  date        DateTime    @default(now())
+  date        DateTime
+  description String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
 
-  vehicleId   String
-  vehicle     Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+}
 
-  tripId      String?
-  trip        Trip?       @relation(fields: [tripId], references: [id])
+// ================================================================
+// NOTIFICATIONS
+// ================================================================
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int? // null + role = broadcast to every user of that role
+  role      Role?
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([role])
+  @@index([isRead])
+}
+
+// ================================================================
+// AUDIT LOG (bonus — "who did what, when")
+// ================================================================
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String // e.g. "TRIP_DISPATCHED", "VEHICLE_RETIRED"
+  entity    String // e.g. "Trip", "Vehicle"
+  entityId  Int?
+  metadata  String? // JSON string of before/after or extra context
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entity])
 }

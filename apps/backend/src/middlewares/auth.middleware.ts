@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { authHelper, ApiError } from "@/utils";
+import { ApiError } from "@/utils";
 import { myEnvironment, prisma } from "@/configs";
+import { verifyAccessToken } from "@/utils/auth-helper.util";
 
 export const authenticate = async (
   req: Request,
@@ -15,7 +16,7 @@ export const authenticate = async (
       throw new ApiError(401, "Unauthorized — please log in");
     }
 
-    const decoded = authHelper.verifyToken<{ id: string }>(
+    const decoded = verifyAccessToken<{ id: string }>(
       token,
       myEnvironment.ACCESS_SECRET!
     );
