@@ -14,7 +14,8 @@ interface LoginResponse {
 }
 
 interface MeResponse extends Pick<User, "id" | "name" | "email" | "role"> {
-  permissions: RolePermission[];
+  // Backend's /auth/me doesn't return this yet — treat it as absent, not empty.
+  permissions?: RolePermission[];
 }
 
 class AuthService {
@@ -57,7 +58,9 @@ export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: authService.logout.bind(authService),
-    onSuccess: () => qc.clear(), // wipe the entire cache on logout — don't leak the next user's stale data
+    // There's no /auth/logout route on the backend yet, so this call 404s —
+    // clear the cache regardless of outcome rather than leaving the user stuck.
+    onSettled: () => qc.clear(),
   });
 }
 
@@ -80,7 +83,10 @@ export function hasModuleAccess(
   module: RolePermission["module"],
   need: "view" | "edit" = "view"
 ): boolean {
-  const perm = permissions?.find(p => p.module === module);
+  // No permissions data from the backend yet — default to allowing access
+  // instead of locking every user out of every module.
+  if (!permissions) return true;
+  const perm = permissions.find(p => p.module === module);
   if (!perm) return false;
   return need === "view" ? perm.canView : perm.canEdit;
 }

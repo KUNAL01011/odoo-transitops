@@ -134,7 +134,7 @@ export default function ProtectedLayout({
           <button
             onClick={() =>
               logout.mutate(undefined, {
-                onSuccess: () => router.replace("/login"),
+                onSettled: () => router.replace("/login"),
               })
             }
             className="text-xs text-slate-400 hover:text-slate-600"
