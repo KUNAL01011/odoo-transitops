@@ -1,4 +1,5 @@
-export type Role = "FLEET_MANAGER" | "DISPATCHER" | "SAFETY_OFFICER" | "FINANCIAL_ANALYST";
+export type Role =
+  "FLEET_MANAGER" | "DISPATCHER" | "SAFETY_OFFICER" | "FINANCIAL_ANALYST";
 export type UserStatus = "ACTIVE" | "LOCKED" | "INACTIVE";
 export type VehicleType = "VAN" | "TRUCK" | "MINI_TRUCK" | "BUS" | "OTHER";
 export type VehicleStatus = "AVAILABLE" | "ON_TRIP" | "IN_SHOP" | "RETIRED";
@@ -127,6 +128,40 @@ export interface SystemSettings {
   licenseAlertDays: number;
   currency: string;
   distanceUnit: string;
+}
+
+export interface DashboardSummary {
+  kpis: {
+    activeVehicles: number;
+    availableVehicles: number;
+    vehiclesInMaintenance: number;
+    activeTrips: number;
+    pendingTrips: number;
+    driversOnDuty: number;
+    fleetUtilizationPct: number;
+  };
+  recentTrips: Array<{
+    tripCode: string;
+    vehicle: string;
+    driver: string;
+    status: TripStatus;
+    eta: string;
+  }>;
+  vehicleStatusBreakdown: Record<VehicleStatus, number>;
+}
+
+export interface AnalyticsSummary {
+  fuelEfficiencyKmPerL: number;
+  fleetUtilizationPct: number;
+  operationalCost: number;
+  vehicleRoiPct: number;
+}
+
+export interface OperationalCost {
+  vehicleId: number;
+  totalFuelCost: number;
+  totalMaintenanceCost: number;
+  totalOperationalCost: number;
 }
 
 export interface ApiResponseShape<T> {
