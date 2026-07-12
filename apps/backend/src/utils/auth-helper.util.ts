@@ -1,27 +1,41 @@
-import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { ApiError } from "./index";
+import { HTTP_STATUS } from "@/constants";
 
-export class TokenAndHashGenerator {
-  signToken(
-    payload: string | object | Buffer,
-    secret: string,
-    options?: SignOptions
-  ): string {
-    return jwt.sign(payload, secret, options);
-  }
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES ?? "15m";
+const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES ?? "7d";
 
-  verifyToken<T = JwtPayload>(token: string, secret: string): T {
-    return jwt.verify(token, secret) as T;
-  }
-
-  async signHash(data: string): Promise<string> {
-    const salt = await bcrypt.genSalt(12);
-    return bcrypt.hash(data, salt);
-  }
-
-  async verifyHash(data: string, hashData: string): Promise<boolean> {
-    return bcrypt.compare(data, hashData);
-  }
+export interface JwtPayload {
+  userId: string;
+  role: string;
 }
 
-export const authHelper = new TokenAndHashGenerator();
+export const signAccessToken = (payload: JwtPayload): string =>
+  jwt.sign(payload, ACCESS_SECRET, {
+    expiresIn: ACCESS_EXPIRES,
+  } as jwt.SignOptions);
+
+export const signRefreshToken = (payload: JwtPayload): string =>
+  jwt.sign(payload, REFRESH_SECRET, {
+    expiresIn: REFRESH_EXPIRES,
+  } as jwt.SignOptions);
+
+export const verifyAccessToken = (token: string): JwtPayload => {
+  try {
+    return jwt.verify(token, ACCESS_SECRET) as JwtPayload;
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError)
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Token expired");
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid token");
+  }
+};
+
+export const verifyRefreshToken = (token: string): JwtPayload => {
+  try {
+    return jwt.verify(token, REFRESH_SECRET) as JwtPayload;
+  } catch {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid refresh token");
+  }
+};
