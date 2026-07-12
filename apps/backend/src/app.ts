@@ -5,6 +5,8 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import { morganMiddleware } from "./utils";
 import { errorHandler, globalLimiter, notFoundHandler } from "./middlewares";
+import routes from "./routes";
+
 const app: Application = express();
 
 // Security middlewares
@@ -45,6 +47,9 @@ app.get("/health", (_req: Request, res: Response) => {
     uptime: process.uptime(),
   });
 });
+
+// API Routes
+app.use("/api", routes);
 
 // Error handler (must be last)
 app.use(notFoundHandler);
