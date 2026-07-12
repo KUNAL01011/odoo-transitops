@@ -41,7 +41,7 @@ export const authService = {
     return authService._generateTokens(user.id, user.role);
   },
 
-  _generateTokens(userId: string, role: Role) {
+  _generateTokens(userId: number, role: Role) {
     return {
       accessToken: signAccessToken({ userId, role }),
       refreshToken: signRefreshToken({ userId, role }),

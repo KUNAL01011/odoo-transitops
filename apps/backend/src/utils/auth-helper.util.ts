@@ -8,7 +8,7 @@ const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES ?? "15m";
 const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES ?? "7d";
 
 export interface JwtPayload {
-  userId: string;
+  userId: number;
   role: string;
 }
 

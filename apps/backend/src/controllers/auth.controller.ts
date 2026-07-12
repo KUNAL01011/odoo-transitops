@@ -28,7 +28,7 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
     .json(
       new ApiResponse(
         HTTP_STATUS.OK,
-        { userId: req.user.id, role: req.user.role },
+        { userId: req.user!.id, role: req.user!.role },
         "OK"
       )
     );

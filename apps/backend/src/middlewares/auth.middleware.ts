@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiError } from "@/utils";
-import { myEnvironment, prisma } from "@/configs";
+import { prisma } from "@/configs";
 import { verifyAccessToken } from "@/utils/auth-helper.util";
 
 export const authenticate = async (
@@ -16,14 +16,11 @@ export const authenticate = async (
       throw new ApiError(401, "Unauthorized — please log in");
     }
 
-    const decoded = verifyAccessToken<{ id: string }>(
-      token,
-      myEnvironment.ACCESS_SECRET!
-    );
+    const decoded = verifyAccessToken(token);
 
     const user = await prisma.user.findFirst({
       where: {
-        id: decoded.id,
+        id: decoded.userId,
       },
     });
     if (!user) {

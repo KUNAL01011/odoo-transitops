@@ -43,12 +43,12 @@ const SERVICE_TYPES = [
 ];
 
 const STATUS_BADGE: Record<string, string> = {
-  IN_SHOP: "bg-amber-100 text-amber-700",
+  ACTIVE: "bg-amber-100 text-amber-700",
   COMPLETED: "bg-emerald-100 text-emerald-700",
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  IN_SHOP: "In Shop",
+  ACTIVE: "In Shop",
   COMPLETED: "Completed",
 };
 
@@ -132,7 +132,7 @@ export default function MaintenancePage() {
   const vehiclesInShop = useMemo(() => {
     if (!allLogs) return 0;
     return new Set(
-      allLogs.filter(l => l.status === "IN_SHOP").map(l => l.vehicleId)
+      allLogs.filter(l => l.status === "ACTIVE").map(l => l.vehicleId)
     ).size;
   }, [allLogs]);
 
@@ -328,7 +328,7 @@ export default function MaintenancePage() {
                 <ImpactRow
                   from="Available"
                   to="In Shop"
-                  toClass={STATUS_BADGE.IN_SHOP}
+                  toClass={STATUS_BADGE.ACTIVE}
                 />
                 <ImpactRow
                   from="In Shop"
@@ -369,7 +369,7 @@ export default function MaintenancePage() {
                   className="appearance-none rounded-lg border border-zinc-300 bg-white py-2 pl-4 pr-9 text-sm text-zinc-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="">All Records</option>
-                  <option value="IN_SHOP">In Shop</option>
+                  <option value="ACTIVE">In Shop</option>
                   <option value="COMPLETED">Completed</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
