@@ -67,7 +67,7 @@ export default tseslint.config(
 
   // 6. BACKEND: Node.js Rules
   {
-    files: ["packages/backend/**/*.ts"],
+    files: ["packages/backend/**/*.{ts,js}"],
     languageOptions: {
       globals: { ...globals.node },
     },
