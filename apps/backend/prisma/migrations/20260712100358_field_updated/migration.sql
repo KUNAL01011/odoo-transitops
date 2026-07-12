@@ -33,7 +33,7 @@ CREATE TYPE "AppModule" AS ENUM ('DASHBOARD', 'FLEET', 'DRIVERS', 'TRIPS', 'MAIN
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "RolePermission" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "role" "Role" NOT NULL,
     "module" "AppModule" NOT NULL,
     "canView" BOOLEAN NOT NULL DEFAULT false,
@@ -63,7 +63,7 @@ CREATE TABLE "RolePermission" (
 
 -- CreateTable
 CREATE TABLE "SystemSettings" (
-    "id" TEXT NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT 1,
     "licenseAlertDays" INTEGER NOT NULL DEFAULT 30,
     "currency" TEXT NOT NULL DEFAULT 'INR',
     "distanceUnit" TEXT NOT NULL DEFAULT 'km',
@@ -74,7 +74,7 @@ CREATE TABLE "SystemSettings" (
 
 -- CreateTable
 CREATE TABLE "Vehicle" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "regNo" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "type" "VehicleType" NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE "Vehicle" (
 
 -- CreateTable
 CREATE TABLE "Driver" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "licenseNumber" TEXT NOT NULL,
     "licenseCategory" "LicenseCategory" NOT NULL,
@@ -107,12 +107,12 @@ CREATE TABLE "Driver" (
 
 -- CreateTable
 CREATE TABLE "Trip" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "tripCode" TEXT NOT NULL,
     "source" TEXT NOT NULL,
     "destination" TEXT NOT NULL,
-    "vehicleId" TEXT,
-    "driverId" TEXT,
+    "vehicleId" INTEGER,
+    "driverId" INTEGER,
     "cargoWeight" DOUBLE PRECISION NOT NULL,
     "plannedDistance" DOUBLE PRECISION NOT NULL,
     "finalOdometer" DOUBLE PRECISION,
@@ -130,8 +130,8 @@ CREATE TABLE "Trip" (
 
 -- CreateTable
 CREATE TABLE "MaintenanceLog" (
-    "id" TEXT NOT NULL,
-    "vehicleId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "vehicleId" INTEGER NOT NULL,
     "serviceType" TEXT NOT NULL,
     "description" TEXT,
     "cost" DOUBLE PRECISION NOT NULL,
@@ -147,9 +147,9 @@ CREATE TABLE "MaintenanceLog" (
 
 -- CreateTable
 CREATE TABLE "FuelLog" (
-    "id" TEXT NOT NULL,
-    "vehicleId" TEXT NOT NULL,
-    "tripId" TEXT,
+    "id" SERIAL NOT NULL,
+    "vehicleId" INTEGER NOT NULL,
+    "tripId" INTEGER,
     "liters" DOUBLE PRECISION NOT NULL,
     "cost" DOUBLE PRECISION NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
@@ -160,8 +160,8 @@ CREATE TABLE "FuelLog" (
 
 -- CreateTable
 CREATE TABLE "Expense" (
-    "id" TEXT NOT NULL,
-    "vehicleId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "vehicleId" INTEGER NOT NULL,
     "type" "ExpenseType" NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
@@ -173,8 +173,8 @@ CREATE TABLE "Expense" (
 
 -- CreateTable
 CREATE TABLE "Notification" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT,
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER,
     "role" "Role",
     "type" "NotificationType" NOT NULL,
     "message" TEXT NOT NULL,
@@ -186,8 +186,8 @@ CREATE TABLE "Notification" (
 
 -- CreateTable
 CREATE TABLE "AuditLog" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
     "action" TEXT NOT NULL,
     "entity" TEXT NOT NULL,
     "entityId" INTEGER,
