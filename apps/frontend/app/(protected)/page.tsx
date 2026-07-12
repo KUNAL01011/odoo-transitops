@@ -40,45 +40,56 @@ export default function DashboardPage() {
       </p>
     );
 
+  // 1. Updated mapping for KPI cards
   const kpis = [
     {
       label: "Active Vehicles",
-      value: data.kpis.activeVehicles,
+      value: data.vehicles.active,
       accent: "border-l-blue-500",
     },
     {
       label: "Available Vehicles",
-      value: data.kpis.availableVehicles,
+      value: data.vehicles.available,
       accent: "border-l-emerald-500",
     },
     {
       label: "In Maintenance",
-      value: data.kpis.vehiclesInMaintenance,
+      value: data.vehicles.inShop,
       accent: "border-l-amber-500",
     },
     {
       label: "Active Trips",
-      value: data.kpis.activeTrips,
+      value: data.trips.active,
       accent: "border-l-transparent",
     },
     {
       label: "Pending Trips",
-      value: data.kpis.pendingTrips,
+      value: data.trips.pending,
       accent: "border-l-transparent",
     },
     {
       label: "Drivers on Duty",
-      value: data.kpis.driversOnDuty,
+      value: data.drivers.onDuty,
       accent: "border-l-transparent",
     },
     {
       label: "Utilization Rate",
-      value: `${data.kpis.fleetUtilizationPct}%`,
+      value: `${data.fleetUtilizationPct}%`,
       accent: "border-l-transparent",
     },
   ];
 
-  const maxCount = Math.max(1, ...Object.values(data.vehicleStatusBreakdown));
+  // 2. Updated mapping for Distribution Bars
+  const vehicleStatusBreakdown = {
+    AVAILABLE: data.vehicles.available,
+    ON_TRIP: data.vehicles.onTrip,
+    IN_SHOP: data.vehicles.inShop,
+    RETIRED: data.vehicles.retired,
+  };
+  const maxCount = Math.max(1, ...Object.values(vehicleStatusBreakdown));
+
+  // Optional: Fallback empty array if recentTrips was removed from this specific API response
+  const recentTrips = data.recentTrips || [];
 
   return (
     <div className="space-y-6">
@@ -156,26 +167,34 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {data.recentTrips.map(trip => (
-                <tr key={trip.tripCode} className="border-t border-slate-100">
-                  <td className="py-3 font-medium text-slate-900">
-                    {trip.tripCode}
+              {recentTrips.length > 0 ? (
+                recentTrips.map((trip: any) => (
+                  <tr key={trip.tripCode} className="border-t border-slate-100">
+                    <td className="py-3 font-medium text-slate-900">
+                      {trip.tripCode}
+                    </td>
+                    <td className="py-3 text-slate-700">{trip.vehicle}</td>
+                    <td className="py-3 text-slate-700">{trip.driver}</td>
+                    <td className="py-3">
+                      <span
+                        className={`rounded px-2 py-0.5 text-xs font-medium uppercase ${
+                          STATUS_BADGE[trip.status] ??
+                          "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {trip.status}
+                      </span>
+                    </td>
+                    <td className="py-3 text-slate-500">{trip.eta}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-slate-500">
+                    No recent trips available.
                   </td>
-                  <td className="py-3 text-slate-700">{trip.vehicle}</td>
-                  <td className="py-3 text-slate-700">{trip.driver}</td>
-                  <td className="py-3">
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs font-medium uppercase ${
-                        STATUS_BADGE[trip.status] ??
-                        "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {trip.status}
-                    </span>
-                  </td>
-                  <td className="py-3 text-slate-500">{trip.eta}</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -187,8 +206,8 @@ export default function DashboardPage() {
           <div className="space-y-4">
             {DISTRIBUTION_ROWS.map(row => {
               const count =
-                data.vehicleStatusBreakdown[
-                  row.key as keyof typeof data.vehicleStatusBreakdown
+                vehicleStatusBreakdown[
+                  row.key as keyof typeof vehicleStatusBreakdown
                 ] ?? 0;
               return (
                 <div key={row.key}>

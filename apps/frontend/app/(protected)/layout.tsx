@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { AppModule } from "@/src/lib/type";
 import { hasModuleAccess, useLogout, useMe } from "@/src/feature/auth/api";
-import { useNotifications } from "@/src/feature/notifications/api";
 
 const NAV_ITEMS: Array<{
   label: string;
@@ -70,14 +69,10 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const { data: me, isLoading, isError } = useMe();
-  const { data: notifications } = useNotifications();
   const logout = useLogout();
   const router = useRouter();
   const pathname = usePathname();
   const [search, setSearch] = useState("");
-
-  const unreadCount =
-    notifications?.filter(n => !(n as any).isRead).length ?? 0;
 
   useEffect(() => {
     if (isError) router.replace("/login");
@@ -160,18 +155,6 @@ export default function ProtectedLayout({
               className="w-full rounded-md border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-400 focus:bg-white"
             />
           </div>
-
-          <Link
-            href="/notifications"
-            className="relative text-slate-500 hover:text-slate-700"
-          >
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-medium text-white">
-                {unreadCount}
-              </span>
-            )}
-          </Link>
 
           <div className="flex items-center gap-3">
             <div className="text-right">

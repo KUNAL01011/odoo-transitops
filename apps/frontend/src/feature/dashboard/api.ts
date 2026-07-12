@@ -12,7 +12,7 @@ export interface DashboardFilters {
 
 class DashboardService {
   get(filters?: DashboardFilters) {
-    return apiClient.get<DashboardSummary>("/dashboard", filters);
+    return apiClient.get<DashboardSummary>("/analytics/dashboard", filters);
   }
 }
 
