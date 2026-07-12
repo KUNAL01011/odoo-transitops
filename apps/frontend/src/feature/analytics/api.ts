@@ -1,7 +1,3 @@
-// ================================================================
-// Analytics & Reports — API_DOCUMENTATION.md §12
-// ================================================================
-
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";
 import { AnalyticsSummary } from "@/src/lib/type";

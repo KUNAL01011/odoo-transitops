@@ -1,7 +1,3 @@
-// ================================================================
-// Dashboard — API_DOCUMENTATION.md §6
-// ================================================================
-
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";
 import { DashboardSummary, VehicleStatus, VehicleType } from "@/src/lib/type";

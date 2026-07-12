@@ -1,10 +1,3 @@
-// ================================================================
-// Auth — API_DOCUMENTATION.md §5
-// If you end up using NextAuth's own signIn()/signOut()/useSession(),
-// you may only need useMe() from this file — keep the rest for a
-// fully custom auth flow.
-// ================================================================
-
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";
 import { RolePermission, User } from "@/src/lib/type";

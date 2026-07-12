@@ -1,7 +1,3 @@
-// ================================================================
-// Formatting utils — pure functions, no dependencies beyond date-fns.
-// ================================================================
-
 import {
   format,
   formatDistanceToNow,

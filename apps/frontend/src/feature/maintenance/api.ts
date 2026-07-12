@@ -1,7 +1,3 @@
-// ================================================================
-// Maintenance — API_DOCUMENTATION.md §10
-// ================================================================
-
 import { MaintenanceInput } from "@/src/helpers/validation";
 import { apiClient } from "@/src/lib/api-client";
 import { queryKeys } from "@/src/lib/query-keys";

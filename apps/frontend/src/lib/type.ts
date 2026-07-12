@@ -26,10 +26,6 @@ export type AppModule =
   | "ANALYTICS"
   | "SETTINGS";
 
-// ---------------------------------------------------------------
-// ENTITY INTERFACES
-// ---------------------------------------------------------------
-
 export interface User {
   id: number;
   name: string;
