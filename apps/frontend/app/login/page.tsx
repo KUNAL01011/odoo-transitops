@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Truck,
   Mail,
   Lock,
+  Shield,
   Eye,
   EyeOff,
   AlertCircle,
@@ -17,26 +16,17 @@ import {
   LogIn,
   Loader2,
 } from "lucide-react";
-
+import { LoginInput, loginSchema } from "@/src/helpers/validation";
 import { ApiRequestError } from "@/src/lib/api-client";
 import { useLogin } from "@/src/feature/auth/api";
 
-// ---------------------------------------------------------------
-// VALIDATION SCHEMA — mirrors LoginInput exactly (email + password only)
-// ---------------------------------------------------------------
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
+const ROLE_OPTIONS: Array<{ value: LoginInput["role"]; label: string }> = [
+  { value: "FLEET_MANAGER", label: "Fleet Manager" },
+  { value: "DISPATCHER", label: "Dispatcher" },
+  { value: "SAFETY_OFFICER", label: "Safety Officer" },
+  { value: "FINANCIAL_ANALYST", label: "Financial Analyst" },
+];
 
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-// ---------------------------------------------------------------
-// Error banner copy — maps ApiRequestError -> title/detail
-// ---------------------------------------------------------------
 function getErrorCopy(error: unknown): { title: string; detail: string } {
   if (error instanceof ApiRequestError) {
     if (error.statusCode === 423) {
@@ -70,12 +60,16 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>({
+  } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: {
+      email: "",
+      password: "",
+      role: "DISPATCHER",
+      rememberMe: false,
+    },
   });
 
-  // Reset the dismissible banner whenever a fresh error comes in
   useEffect(() => {
     if (loginMutation.isError) setBannerDismissed(false);
   }, [loginMutation.isError, loginMutation.error]);
@@ -95,6 +89,19 @@ export default function LoginPage() {
     <div className="flex min-h-screen w-full">
       {/* ---------------- Left brand panel ---------------- */}
       <div className="relative hidden w-1/2 overflow-hidden bg-zinc-100 lg:flex lg:flex-col">
+        {/* Background image layer — sits behind the text, faded so it reads
+            as decoration rather than competing with the heading */}
+        <div className="absolute inset-0">
+          <img
+            src="/login.png"
+            alt=""
+            className="h-full w-full object-cover opacity-20 grayscale"
+          />
+          {/* Fades the image back to solid background near the top, so the
+              logo/heading area stays crisp regardless of what's in the image */}
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-100 via-zinc-100/60 to-transparent" />
+        </div>
+
         <div className="relative z-10 px-16 pt-16">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600">
@@ -113,55 +120,6 @@ export default function LoginPage() {
             and operational compliance.
           </p>
         </div>
-
-        {/* Decorative road illustration */}
-        <svg
-          className="pointer-events-none absolute -bottom-10 -left-10 h-[480px] w-[480px] text-zinc-200"
-          viewBox="0 0 480 480"
-          fill="none"
-        >
-          <path
-            d="M40 120 h340 a40 40 0 0 1 40 40 v0 a40 40 0 0 1 -40 40 H120 a40 40 0 0 0 -40 40 v0 a40 40 0 0 0 40 40 h300"
-            stroke="currentColor"
-            strokeWidth="14"
-          />
-          <circle
-            cx="180"
-            cy="240"
-            r="34"
-            stroke="currentColor"
-            strokeWidth="10"
-          />
-          <circle
-            cx="260"
-            cy="240"
-            r="34"
-            stroke="currentColor"
-            strokeWidth="10"
-          />
-          {Array.from({ length: 6 }).map((_, i) => (
-            <rect
-              key={`h1-${i}`}
-              x={60 + i * 60}
-              y="114"
-              width="26"
-              height="12"
-              rx="2"
-              fill="currentColor"
-            />
-          ))}
-          {Array.from({ length: 5 }).map((_, i) => (
-            <rect
-              key={`h2-${i}`}
-              x={140 + i * 60}
-              y="354"
-              width="26"
-              height="12"
-              rx="2"
-              fill="currentColor"
-            />
-          ))}
-        </svg>
       </div>
 
       {/* ---------------- Right form panel ---------------- */}
@@ -202,7 +160,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={onSubmit} className="mt-6 space-y-5" noValidate>
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -229,7 +186,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -268,16 +224,50 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-end pt-1">
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            <div>
+              <label
+                htmlFor="role"
+                className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-zinc-500"
               >
-                Forgot password?
-              </Link>
+                Role (RBAC)
+              </label>
+              <div className="relative">
+                <Shield className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                <select
+                  id="role"
+                  aria-invalid={!!errors.role}
+                  className="w-full appearance-none rounded-lg border border-zinc-300 py-2.5 pl-10 pr-3 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  {...register("role")}
+                >
+                  {ROLE_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {errors.role && (
+                <p className="mt-1.5 text-xs text-red-600">
+                  {errors.role.message}
+                </p>
+              )}
+              <p className="mt-1 text-[11px] text-zinc-400">
+                This pre-fills your workspace view — your account's actual role
+                is what's enforced.
+              </p>
             </div>
 
-            {/* Submit */}
+            <div className="flex items-center pt-1">
+              <label className="flex items-center gap-2 text-sm text-zinc-600">
+                <input
+                  type="checkbox"
+                  className="rounded border-zinc-300"
+                  {...register("rememberMe")}
+                />
+                Remember me
+              </label>
+            </div>
+
             <button
               type="submit"
               disabled={loginMutation.isPending}

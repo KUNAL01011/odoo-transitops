@@ -23,10 +23,6 @@ import type {
   ApiResponseShape,
 } from "../src/lib/type";
 
-// ---------------------------------------------------------------
-// USERS — one per role, matches Screen 0's "One login, Four roles"
-// ---------------------------------------------------------------
-
 export const mockUsers: User[] = [
   {
     id: 1,

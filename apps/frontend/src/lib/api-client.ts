@@ -19,10 +19,11 @@ interface ApiResponseShape<T> {
 
 type QueryParams = Record<string, string | number | boolean | undefined | null>;
 
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+
 class ApiClient {
-  constructor(
-    private baseUrl: string = process.env.NEXT_PUBLIC_API_BASE_URL || "/api"
-  ) {}
+  constructor(private baseUrl: string = API_BASE_URL) {}
 
   private buildQuery(params?: QueryParams): string {
     if (!params) return "";
@@ -38,7 +39,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
-      credentials: "include", // send the session cookie (NextAuth or custom)
+      credentials: "include", // required cross-origin so the session cookie rides along
       ...options,
       headers: {
         "Content-Type": "application/json",

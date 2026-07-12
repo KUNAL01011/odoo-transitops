@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
-});
-export type LoginInput = z.infer<typeof loginSchema>;
-
 export const vehicleSchema = z.object({
   regNo: z.string().min(4, "Registration number looks too short"),
   name: z.string().min(1, "Name/model is required"),
@@ -76,3 +70,19 @@ export const settingsSchema = z.object({
   distanceUnit: z.string().min(1),
 });
 export type SettingsInput = z.infer<typeof settingsSchema>;
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+  role: z.enum(
+    ["FLEET_MANAGER", "DISPATCHER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"],
+    {
+      error: "Select a role",
+    }
+  ),
+  rememberMe: z.boolean().optional(),
+});
+export type LoginInput = z.infer<typeof loginSchema>;
